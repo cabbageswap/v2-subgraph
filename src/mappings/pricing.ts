@@ -88,6 +88,23 @@ export function getTrackedVolumeUSD(
     return ZERO_BD
   }
 
+  // both are whitelist tokens, take average of both amounts
+  if (WHITELIST.includes(token0.id) && WHITELIST.includes(token1.id)) {
+    return tokenAmount0
+      .times(price0)
+      .plus(tokenAmount1.times(price1))
+      .div(BigDecimal.fromString('2'))
+  }
+  // take full value of the whitelisted token amount
+  if (WHITELIST.includes(token0.id) && !WHITELIST.includes(token1.id)) {
+    return tokenAmount0.times(price0)
+  }
+
+  // take full value of the whitelisted token amount
+  if (!WHITELIST.includes(token0.id) && WHITELIST.includes(token1.id)) {
+    return tokenAmount1.times(price1)
+  }
+
   // if less than 5 LPs, require high minimum reserve amount amount or return 0
   if (pair.liquidityProviderCount.lt(BigInt.fromI32(5))) {
     let reserve0USD = pair.reserve0.times(price0)
@@ -107,24 +124,6 @@ export function getTrackedVolumeUSD(
         return ZERO_BD
       }
     }
-  }
-
-  // both are whitelist tokens, take average of both amounts
-  if (WHITELIST.includes(token0.id) && WHITELIST.includes(token1.id)) {
-    return tokenAmount0
-      .times(price0)
-      .plus(tokenAmount1.times(price1))
-      .div(BigDecimal.fromString('2'))
-  }
-
-  // take full value of the whitelisted token amount
-  if (WHITELIST.includes(token0.id) && !WHITELIST.includes(token1.id)) {
-    return tokenAmount0.times(price0)
-  }
-
-  // take full value of the whitelisted token amount
-  if (!WHITELIST.includes(token0.id) && WHITELIST.includes(token1.id)) {
-    return tokenAmount1.times(price1)
   }
 
   // neither token is on white list, tracked volume is 0
